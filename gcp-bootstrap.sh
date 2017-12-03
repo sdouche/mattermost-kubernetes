@@ -66,3 +66,14 @@ gcloud sql users set-password postgres no-host \
 gcloud sql users create "${PG_PROXYUSER_NAME}" host \
 	--instance="${PG_INSTANCE_NAME}" \
 	--password="${PG_PROXYUSER_PASSWORD}"
+
+# FIXME: Translate these commands to a k8s file
+# Create the Secret which enables authentication to Cloud SQL
+kubectl create secret generic cloudsql-instance-credentials \
+	--from-file=credentials.json=/home/sdouche/.config/gcloud/${SA_NAME}.json
+
+# Create the Secret needed for database access
+kubectl create secret generic cloudsql-db-credentials \
+	--from-literal=username="${PG_PROXYUSER_NAME}" \
+	--from-literal=password="${PG_PROXYUSER_PASSWORD}"
+

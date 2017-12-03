@@ -19,15 +19,9 @@ spec:
         image: "mattermost/mattermost-prod-app:3"
         env:
         - name: DB_HOST
-          valueFrom:
-            configMapKeyRef:
-              name: mattermost-config
-              key: db-host
+          value: "localhost"
         - name: DB_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: mattermost-config
-              key: db-port
+          value: "5432"
         - name: MM_DBNAME
           valueFrom:
             configMapKeyRef:
@@ -47,7 +41,31 @@ spec:
         - name: etclocaltime
           mountPath: /etc/localtime
           readOnly: true
+      - name: cloudsql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.11
+        command: ["/cloud_sql_proxy", "--dir=/cloudsql",
+                  "-instances=mattermost-rythm:europe-west1:mattermost=tcp:5432",
+                  "-credential_file=/secrets/cloudsql/credentials.json"]
+        volumeMounts:
+          - name: cloudsql-instance-credentials
+            mountPath: /secrets/cloudsql
+            readOnly: true
+          - name: ssl-certs
+            mountPath: /etc/ssl/certs
+          - name: cloudsql
+            mountPath: /cloudsql
+          - name: etclocaltime
+            mountPath: /etc/localtime
+            readOnly: true
       volumes:
-      - name: etclocaltime
-        hostPath:
-          path: /etc/localtime
+        - name: etclocaltime
+          hostPath:
+            path: /etc/localtime
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+        - name: cloudsql
+          emptyDir:
+        - name: ssl-certs
+          hostPath:
+            path: /etc/ssl/certs
