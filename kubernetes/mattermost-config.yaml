@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mattermost-config
+data:
+  db-host: "db"
+  db-port: "5432"
+  db-name: "mattermost"

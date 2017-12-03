@@ -1,0 +1,53 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mattermost-app
+  labels:
+    app: mattermost
+    tier: app
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: mattermost-app
+      labels:
+        app: mattermost
+        tier: app
+    spec:
+      containers:
+      - name: mattermost-app
+        image: "mattermost/mattermost-prod-app:3"
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: mattermost-config
+              key: db-host
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: mattermost-config
+              key: db-port
+        - name: MM_DBNAME
+          valueFrom:
+            configMapKeyRef:
+              name: mattermost-config
+              key: db-name
+        - name: MM_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mattermost-secret
+              key: mm-username
+        - name: MM_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mattermost-secret
+              key: mm-password
+        volumeMounts:
+        - name: etclocaltime
+          mountPath: /etc/localtime
+          readOnly: true
+      volumes:
+      - name: etclocaltime
+        hostPath:
+          path: /etc/localtime
